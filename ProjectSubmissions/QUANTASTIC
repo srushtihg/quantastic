@@ -1,0 +1,76 @@
+import numpy as np
+import random
+import matplotlib.pyplot as plt
+from collections import Counter
+
+def quantum_dice_roll(num_sides=6, superposition_bias=0.1, measurement_collapse_variance=0.2):
+    """
+    Simulates a whimsical quantum dice roll with tunable "superposition" and "measurement".
+
+    This is a highly stylized simulation, not a physically accurate representation of quantum mechanics.
+    It adds a touch of randomness and non-uniformity to mimic quantum-like behavior.
+
+    Args:
+        num_sides: The number of sides on the dice (default: 6).
+        superposition_bias: A value influencing the initial probability distribution (0 to 1).
+        measurement_collapse_variance: A value that adds variation to the final roll (0 to 1).
+
+    Returns:
+        An integer representing the dice roll result.
+    """
+    if num_sides <= 1:
+        raise ValueError("Number of sides must be greater than 1.")
+
+    # "Superposition" with a bias
+    probabilities = np.ones(num_sides) / num_sides
+    if random.random() < superposition_bias:
+        biased_side = random.randint(0, num_sides - 1)
+        probabilities[biased_side] *= (1 + superposition_bias)
+        probabilities /= np.sum(probabilities)  # Normalize
+
+    # "Measurement" with variance
+    roll_index = random.choices(range(num_sides), weights=probabilities, k=1)[0]
+    roll_value = roll_index + 1
+
+    if random.random() < measurement_collapse_variance:
+        variance_shift = random.randint(-1, 1)  # Small shift
+        roll_value = max(1, min(num_sides, roll_value + variance_shift))  # Clamp to valid range
+
+    return roll_value
+
+def simulate_dice_rolls(num_rolls, num_sides=6): #num_sides is fixed to 6.
+    """Simulates a series of dice rolls and returns the results."""
+    results = [quantum_dice_roll(num_sides=num_sides) for _ in range(num_rolls)]
+    return results
+
+def plot_dice_distribution(results_list, num_rolls_list):
+    """Plots a histogram of dice roll results for multiple frequencies."""
+    num_sides = 6 #Fixed number of sides.
+    colors = ['blue', 'green', 'red']  # Define colors for each histogram
+    for i, results in enumerate(results_list):
+        plt.hist(results, bins=range(1, num_sides + 2), align='left', rwidth=0.8, alpha=0.5, label=f"{num_rolls_list[i]} Rolls", color=colors[i]) #added alpha and label.
+        frequency = Counter(results)
+        print(f"Dice Roll Frequencies for {num_rolls_list[i]} Rolls:")
+        for value, count in frequency.items():
+            print(f"{value}: {count}")
+
+    plt.xticks(range(1, num_sides + 1))
+    plt.xlabel("Dice Roll Value")
+    plt.ylabel("Frequency")
+    plt.title(f"Quantum Dice Roll Distribution ({num_sides} Sides)")
+    plt.legend() #Adds the legend
+    plt.show()
+
+if _name_ == "_main_":
+    try:
+        num_rolls_list = []
+        for i in range(3):
+            num_rolls = int(input(f"Enter the number of rolls for experiment {i+1}: "))
+            num_rolls_list.append(num_rolls)
+
+        results_list = [simulate_dice_rolls(num_rolls) for num_rolls in num_rolls_list]
+        plot_dice_distribution(results_list, num_rolls_list)
+    except ValueError:
+        print("Invalid input. Please enter integer values for the number of rolls.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
